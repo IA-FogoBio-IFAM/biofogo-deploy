@@ -11,8 +11,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports:
-      - "127.0.0.1:5432:5432"
+    # Porta não exposta externamente - API acessa via rede interna Docker
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U sipam_user -d sipam_db"]
       interval: 10s

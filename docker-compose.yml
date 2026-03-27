@@ -33,7 +33,7 @@ services:
       WMS_URL: https://panorama.sipam.gov.br/geoserver/painel_do_fogo/wms
       WFS_URL: https://panorama.sipam.gov.br/geoserver/painel_do_fogo/wfs
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:8080:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -46,7 +46,7 @@ services:
       - ./frontend/build:/usr/share/nginx/html:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - "127.0.0.1:3000:80"
+      - "127.0.0.1:3001:80"
     depends_on:
       - api
 

@@ -1,0 +1,55 @@
+services:
+
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: biofogo_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sipam_db
+      POSTGRES_USER: sipam_user
+      POSTGRES_PASSWORD: sipam_pass
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sipam_user -d sipam_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./api
+    container_name: biofogo_api
+    restart: unless-stopped
+    environment:
+      PG_HOST: db
+      PG_PORT: "5432"
+      PG_DBNAME: sipam_db
+      PG_USER: sipam_user
+      PG_PASSWORD: sipam_pass
+      PG_SCHEMA: sipam
+      WMS_URL: https://panorama.sipam.gov.br/geoserver/painel_do_fogo/wms
+      WFS_URL: https://panorama.sipam.gov.br/geoserver/painel_do_fogo/wfs
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: nginx:alpine
+    container_name: biofogo_frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend/build:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "127.0.0.1:3000:80"
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
